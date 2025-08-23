@@ -13,8 +13,6 @@ app.get('/',(req,res)=>{
     res.send('job is fallen from the sky');
 })
 
-
-
 const uri = `mongodb+srv://mahadisaheb:LZRIBSX1eHDaoQUe@cluster0.wld9ndi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 
@@ -55,5 +53,5 @@ run().catch(console.dir);
 
 
 app.listen(port,()=>{
-    console.log(process.env.DB_USER);
+    console.log("pinged");
 })
