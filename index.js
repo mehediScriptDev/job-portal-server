@@ -13,7 +13,7 @@ app.get('/',(req,res)=>{
     res.send('job is fallen from the sky');
 })
 
-const uri = `mongodb+srv://mahadisaheb:LZRIBSX1eHDaoQUe@cluster0.wld9ndi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wld9ndi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 
 
