@@ -55,7 +55,6 @@ async function run() {
     app.post('/jobapplications', async(req,res)=>{
       const application = req.body;
       const result = await applicationCollections.insertOne(application);
-      console.log(application)
       res.send(result);
     })
 
