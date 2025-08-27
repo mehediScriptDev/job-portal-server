@@ -36,17 +36,26 @@ async function run() {
    
 
     const jobCollections = client.db('chakri').collection('mela');
+    const appicationCollections = client.db('chakri').collection('abedon');
+
     app.get('/jobs', async(req,res)=>{
       const cursor = jobCollections.find();
       const result = await cursor.toArray();
       res.send(result);
     })
 
+    
     app.get('/jobs/:id', async(req,res)=>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await jobCollections.findOne(query);
       res.send(result)
+    })
+
+    app.post('/job-appications', async(req,res)=>{
+      const application = req.body;
+      const result = await appicationCollections.insertOne(application);
+      res.send(result);
     })
 
 
