@@ -62,6 +62,9 @@ async function run() {
       const email = req.query.email;
       const query = {applicant_email: email}
       const result = await applicationCollections.find(query).toArray();
+
+
+
       res.send(result);
     })
 
