@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 require("dotenv").config();
 
-app.use(cors({origin:['http://localhost:5173'],credentials:true}));
+app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -66,8 +66,7 @@ async function run() {
       res
         .cookie("token", token, {
           httpOnly: true,
-          secure: true,
-          sameSite: "none"
+          secure: false,
         })
         .send({ success: true });
     });
@@ -75,6 +74,7 @@ async function run() {
     app.get("/job-application", async (req, res) => {
       const email = req.query.email;
       const query = { applicant_email: email };
+      console.log("cuk cuk ", req.cookies);
       const result = await applicationCollections.find(query).toArray();
 
       // fokkira way
