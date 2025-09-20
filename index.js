@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -8,6 +9,7 @@ require("dotenv").config();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("job is fallen from the sky");
@@ -60,8 +62,13 @@ async function run() {
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, "secret", { expiresIn: "1h" });
-      res.send(token);
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+        })
+        .send({ success: true });
     });
 
     app.get("/job-application", async (req, res) => {
