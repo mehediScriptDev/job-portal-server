@@ -81,21 +81,13 @@ async function run() {
     // jwt token
 
     app.post("/jwt", (req, res) => {
-      const userData = req.body;
-      const token = jwt.verify(
-        userData,
-        process.env.JWT_SECRET,
-        function (err, decoded) {
-
-          
-          res
-            .cookie("token", token, {
-              httpOnly: true,
-              secure: false,
-            })
-            .send({ success: true });
-        }
-      );
+      const {email} = req.body;
+      const user = {email};
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
+      res.cookie("token",token,{
+        httpOnly:true,
+        secure:false
+      }).send({success:true})
     });
 
     app.get("/job-application", async (req, res) => {
