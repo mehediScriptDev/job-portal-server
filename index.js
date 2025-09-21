@@ -7,29 +7,34 @@ const app = express();
 const port = process.env.PORT || 5000;
 require("dotenv").config();
 
+// middlewares
 app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-const logger = (req, res, next) => {
-  console.log("ill be ingsha allah");
-  next();
-};
-// const verifyToken = (req,res,next)=>{
-//   const token = req?.cookies?.token;
-
-//   if(!token){
-//     return res.status(401).send({message:"unauthorized user"})
-//   }
-
-//   jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
-//   if(err){
-//     return res.status(401).send({message: "maybe your token expired!"})
-//   }
+// middleware functions
+// const logger = (req,res,next)=>{
+//   console.log("rafi the superstar");
 //   next();
-// })
-
 // }
+const verifyToken = (req,res,next)=>{
+  const token = req.cookies.token;
+  if(!token){
+    return res.status(401).send({message:"Unauthorized"})
+  }
+
+
+  
+
+  jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+  if(err){
+    return res.status(401).send({message: "Unauthorized"})
+  }
+  checkingMail = decoded.email;
+  next();
+})
+
+}
 
 app.get("/", (req, res) => {
   res.send("job is fallen from the sky");
@@ -90,9 +95,14 @@ async function run() {
       }).send({success:true})
     });
 
-    app.get("/job-application", async (req, res) => {
+    app.get("/job-application", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { applicant_email: email };
+
+      if(email !== checkingMail){
+        return res.status(401).send({message:"unAuthorized"})
+      }
+      // console.log(req.cookies)
       // console.log("cuk cuk ", req.cookies);
       const result = await applicationCollections.find(query).toArray();
 
