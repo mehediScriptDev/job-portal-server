@@ -7,29 +7,29 @@ const app = express();
 const port = process.env.PORT || 5000;
 require("dotenv").config();
 
-app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
+app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-const logger = (req,res,next) =>{
-  console.log("ill be ingsha allah")
+const logger = (req, res, next) => {
+  console.log("ill be ingsha allah");
   next();
-}
-const verifyToken = (req,res,next)=>{
-  const token = req?.cookies?.token;
-  
-  if(!token){
-    return res.status(401).send({message:"unauthorized user"})
-  }
+};
+// const verifyToken = (req,res,next)=>{
+//   const token = req?.cookies?.token;
 
-  jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
-  if(err){
-    return res.status(401).send({message: "maybe your token expired!"})
-  }
-  next();
-})
-  
-}
+//   if(!token){
+//     return res.status(401).send({message:"unauthorized user"})
+//   }
+
+//   jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
+//   if(err){
+//     return res.status(401).send({message: "maybe your token expired!"})
+//   }
+//   next();
+// })
+
+// }
 
 app.get("/", (req, res) => {
   res.send("job is fallen from the sky");
@@ -81,17 +81,24 @@ async function run() {
     // jwt token
 
     app.post("/jwt", (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: false,
-        })
-        .send({ success: true });
+      const userData = req.body;
+      const token = jwt.verify(
+        userData,
+        process.env.JWT_SECRET,
+        function (err, decoded) {
+
+          
+          res
+            .cookie("token", token, {
+              httpOnly: true,
+              secure: false,
+            })
+            .send({ success: true });
+        }
+      );
     });
 
-    app.get("/job-application",verifyToken, async (req, res) => {
+    app.get("/job-application", async (req, res) => {
       const email = req.query.email;
       const query = { applicant_email: email };
       // console.log("cuk cuk ", req.cookies);
