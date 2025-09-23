@@ -8,7 +8,16 @@ const port = process.env.PORT || 5000;
 require("dotenv").config();
 
 // middlewares
-app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://loginpage-df47f.web.app",
+      "https://loginpage-df47f.firebaseapp.com",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -17,24 +26,20 @@ app.use(cookieParser());
 //   console.log("rafi the superstar");
 //   next();
 // }
-const verifyToken = (req,res,next)=>{
+const verifyToken = (req, res, next) => {
   const token = req.cookies.token;
-  if(!token){
-    return res.status(401).send({message:"Unauthorized"})
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized" });
   }
 
-
-  
-
-  jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
-  if(err){
-    return res.status(401).send({message: "Unauthorized"})
-  }
-  checkingMail = decoded.email;
-  next();
-})
-
-}
+  jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(401).send({ message: "Unauthorized" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
 
 app.get("/", (req, res) => {
   res.send("job is fallen from the sky");
@@ -54,12 +59,12 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.connect();
+    // // Send a ping to confirm a successful connection
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
 
     const jobCollections = client.db("chakri").collection("mela");
     const applicationCollections = client.db("chakri").collection("abedon");
@@ -86,28 +91,33 @@ async function run() {
     // jwt token
 
     app.post("/jwt", (req, res) => {
-      const {email} = req.body;
-      const user = {email};
-      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
-      res.cookie("token",token,{
-        httpOnly:true,
-        secure:false
-      }).send({success:true})
+      const { email } = req.body;
+      const user = { email };
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "1h" });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
     });
-
-    app.post("/logout",(req,res)=>{
-      res.clearCookie("token", {
-        httpOnly:true,
-        secure:false
-      }).send({success:true})
-    })
+    app.post("/logout", (req, res) => {
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
 
     app.get("/job-application", verifyToken, async (req, res) => {
       const email = req.query.email;
       const query = { applicant_email: email };
 
-      if(email !== checkingMail){
-        return res.status(401).send({message:"unAuthorized"})
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden" });
       }
       // console.log(req.cookies)
       // console.log("cuk cuk ", req.cookies);
